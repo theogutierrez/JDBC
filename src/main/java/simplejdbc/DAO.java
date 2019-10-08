@@ -80,7 +80,26 @@ public class DAO {
 	 * @throws DAOException
 	 */
 	public int numberOfOrdersForCustomer(int customerId) throws DAOException {
-		throw new UnsupportedOperationException("Pas encore implémenté");
+                		
+		int result = 0;
+                // Une requête SQL paramétrée
+		String sql = "SELECT COUNT(*) AS NBCOMMANDES FROM PURCHASE_ORDER WHERE CUSTOMER_ID = ? ";
+		// Syntaxe "try with resources" 
+		// cf. https://stackoverflow.com/questions/22671697/try-try-with-resources-and-connection-statement-and-resultset-closing
+		try (Connection connection = myDataSource.getConnection(); // Ouvrir une connexion
+			PreparedStatement stmt = connection.prepareStatement(sql)) {
+                            stmt.setInt(1, customerId);
+                            ResultSet rs = stmt.executeQuery();
+                            rs.next(); // Pas la peine de faire while, il y a 1 seul enregistrement
+                            // On récupère le champ NUMBER de l'enregistrement courant
+                            result = rs.getInt("NBCOMMANDES");
+
+		} catch (SQLException ex) {
+			Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
+			throw new DAOException(ex.getMessage());
+		}
+
+		return result;
 	}
 
 	/**
@@ -91,7 +110,29 @@ public class DAO {
 	 * @throws DAOException
 	 */
 	CustomerEntity findCustomer(int customerID) throws DAOException {
-		throw new UnsupportedOperationException("Pas encore implémenté");
+                
+                // Une requête SQL paramétrée
+		String sql = "SELECT * FROM CUSTOMER WHERE CUSTOMER_ID = ? ";
+		// Syntaxe "try with resources" 
+		// cf. https://stackoverflow.com/questions/22671697/try-try-with-resources-and-connection-statement-and-resultset-closing
+		try (Connection connection = myDataSource.getConnection(); // Ouvrir une connexion
+			PreparedStatement stmt = connection.prepareStatement(sql)) {
+                            stmt.setInt(1, customerID);
+                            ResultSet rs = stmt.executeQuery();
+                            if(rs.next()) {
+                                String name = rs.getString("NAME");
+                                String adress = rs.getString("ADDRESSLINE1");
+                                CustomerEntity entity = new CustomerEntity(customerID,name,adress);
+                                return entity;
+                            } else {
+                                return null;
+                            }
+                   
+		} catch (SQLException ex) {
+			Logger.getLogger("DAO").log(Level.SEVERE, null, ex);
+			throw new DAOException(ex.getMessage());
+		}
+
 	}
 
 	/**
